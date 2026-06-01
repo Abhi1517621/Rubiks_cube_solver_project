@@ -6,7 +6,7 @@
 #define RUBIKS_CUBE_SOLVER_IDDFSSOLVER_H
 
 template<typename T, typename H>
-class IDDFSSolver {
+class IDDFSSolver{
 
 private:
     int max_search_depth;
@@ -21,7 +21,7 @@ public:
     }
 
 //    Used DFSSolver with increasing max_search_depth
-    vector<RubiksCube::MOVE> solve() {
+    vector<RubiksCube::MOVE>solve(){
         for (int i = 1; i <= max_search_depth; i++) {
             DFSSolver<T, H> dfsSolver(rubiksCube, i);
             moves = dfsSolver.solve();
