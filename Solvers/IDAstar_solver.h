@@ -6,7 +6,7 @@
 #ifndef RUBIKS_CUBE_SOLVER_IDASTARSOLVER_H
 #define RUBIKS_CUBE_SOLVER_IDASTARSOLVER_H
 
-template<typename T, typename H>
+template<typename T,typename H>
 class IDAstarSolver {
 private:
     CornerPatternDatabase cornerDB;
@@ -14,7 +14,7 @@ private:
     unordered_map<T, RubiksCube::MOVE, H> move_done;
     unordered_map<T, bool, H> visited;
 
-    struct Node {
+    struct Node{
         T cube;
         int depth;
         int estimate;
@@ -31,7 +31,7 @@ private:
         }
     };
 
-    void resetStructure() {
+    void resetStructure(){
         moves.clear();
         move_done.clear();
         visited.clear();
