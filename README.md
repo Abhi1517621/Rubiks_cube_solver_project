@@ -67,6 +67,3 @@ Run the compiled executable:
 ./rubiks_cube_solver
 ```
 
-## Key Takeaways
-
-Building this project reinforced my ability to analyze time-space trade-offs. Transitioning from a standard array to a bitboard taught me the value of mechanical sympathy and cache-friendly data structures. Furthermore, designing the NibbleArray demonstrated how bit-level memory management can directly solve hardware constraints in algorithm design.
