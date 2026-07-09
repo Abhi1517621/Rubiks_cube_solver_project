@@ -2,68 +2,62 @@
 
 ## Project Overview
 
-This project is a high-performance Rubik's Cube solver written in C++17[cite: 1]. I built this solver to deepen my understanding of graph theory, state-space search algorithms, and low-level system optimization. 
-
-A Rubik's Cube has over 43 quintillion possible configurations. Finding the optimal solution path requires navigating this massive state space without exhausting system memory or CPU time. To achieve this, the project decouples the physical representation of the cube from the pathfinding logic, allowing for the comparison of multiple data structures and search strategies[cite: 1].
+This project features a high-performance Rubik's Cube solver engineered in C++17. Designed to explore graph theory, state-space search algorithms, and low-level system optimization, the solver effectively navigates a state space of over 43 quintillion possible configurations. Finding the optimal solution path requires managing this massive space without exhausting system memory or CPU time. To achieve this, the architecture decouples the physical representation of the cube from the pathfinding logic, enabling the benchmarking and comparison of multiple data structures and search strategies.
 
 ## Technical Stack
 
 * Language: C++17
-* Build System: CMake[cite: 1]
-* Core Algorithms: Breadth-First Search (BFS), Depth-First Search (DFS), Iterative Deepening DFS (IDDFS), Iterative Deepening A* (IDA*)[cite: 1]
+* Build System: CMake
+* Core Algorithms: Breadth-First Search (BFS), Depth-First Search (DFS), Iterative Deepening DFS (IDDFS), Iterative Deepening A* (IDA*)
 
 ## Core Architecture and Engineering Decisions
 
 ### 1. State Representation and Optimization
-I implemented three different models to represent the cube in memory, progressively optimizing for speed[cite: 1]:
+Three distinct models represent the cube in memory, progressively optimizing for computational speed:
 * 3D Array Model: An intuitive 6x3x3 character matrix.
-* 1D Array Model: A flattened 54-character array that improves cache locality and calculates positions using index mapping[cite: 1].
-* Bitboard Model: The most optimized representation. It compresses the 8 moving pieces of each face into a single 64-bit integer (`uint64_t`). Face rotations are executed using hardware-level circular bitwise shifts (`<<`, `>>`) and masks, reducing a complex 3D rotation to just 3 CPU clock cycles.
+* 1D Array Model: A flattened 54-character array that improves cache locality and calculates spatial positions using index mapping formulas.
+* Bitboard Model: The most highly optimized representation. It compresses the 8 moving pieces of each face into a single 64-bit integer (`uint64_t`). Face rotations are executed using hardware-level circular bitwise shifts (`<<`, `>>`) and masks, reducing a complex 3D rotation to just 3 CPU clock cycles.
 
 ### 2. Heuristics and Pattern Databases
-To guide the IDA* solver, I needed an admissible heuristic to estimate the distance to the solved state.
-* Problem Relaxation: The solver precomputes the exact number of moves required to solve just the 8 corner pieces[cite: 1].
-* Perfect Hashing: I used Lehmer codes and base-3 conversions to assign a unique, collision-free integer index to all 88 million possible corner configurations[cite: 1].
-* Memory Compression: Storing this database normally would require 88 MB of RAM. Since corner solutions never exceed 11 moves, I implemented a custom `NibbleArray` to pack two 4-bit values into a single byte. This effectively cut the database memory footprint in half[cite: 1].
+To intelligently guide the IDA* solver, an admissible heuristic is utilized to estimate the distance to the solved state.
+* Problem Relaxation: The solver precomputes the exact number of moves required to solve just the 8 corner pieces.
+* Perfect Hashing: Lehmer codes and base-3 conversions are utilized to assign a unique, collision-free integer index to all 88,179,840 possible corner configurations.
+* Memory Compression: Storing this database traditionally would require approximately 88 MB of RAM. Since corner solutions never exceed 11 moves, a custom `NibbleArray` was implemented to pack two 4-bit values into a single byte. This effectively reduces the database memory footprint by 50%.
 
 ### 3. Pathfinding Algorithms
-The solver implements multiple algorithms to demonstrate the trade-offs between time and space complexity[cite: 1]:
-* BFS: Guarantees the shortest path but causes memory exhaustion (O(18^d) space) on deep scrambles due to queue size[cite: 1].
-* DFS: Highly memory-efficient (O(d) space) but returns non-optimal solutions[cite: 1].
-* IDDFS: Combines DFS's memory efficiency with BFS's optimality, but suffers from exponential time complexity[cite: 1].
-* IDA*: The final and most efficient solver. It uses the precomputed Pattern Database to aggressively prune search branches that mathematically cannot reach the solution within the current depth threshold, solving highly scrambled cubes in milliseconds[cite: 1].
+The solver implements multiple algorithms to demonstrate the inherent trade-offs between time and space complexity in graph search:
+* BFS: Guarantees the shortest path but causes memory exhaustion (O(18^d) space) on deep scrambles due to exponential queue size growth.
+* DFS: Highly memory-efficient (O(d) space) but returns non-optimal, excessively long solution sequences.
+* IDDFS: Combines the memory efficiency of DFS with the optimality of BFS, but suffers from exponential time complexity due to redundant top-level searches.
+* IDA*: The final and most computationally efficient solver. It utilizes the precomputed Pattern Database to aggressively prune search branches that mathematically cannot reach the solution within the current depth threshold, solving highly scrambled cubes in milliseconds.
 
-## Project Structure
+## Detailed Project Structure
 
-* /Model: Contains the abstract `RubiksCube` interface and concrete models (3D Array, 1D Array, Bitboard)[cite: 1].
-* /PatternDatabases: Handles the generation, indexing, and serialization of the heuristic lookup tables (CornerDB)[cite: 1].
-* /Solver: Contains the distinct search algorithm implementations[cite: 1].
-* CMakeLists.txt: Configuration for the build system[cite: 1].
+* Model/: Contains the abstract `RubiksCube` interface and concrete models implementing the interface (`3dArray`, `1dArray`, `Bitboard`).
+* Pattern_Databases/: Handles the generation, indexing, and serialization of the heuristic lookup tables. Includes the `NibbleArray` implementation for memory compression and `math.h` for mathematical operations.
+* Solvers/: Contains the distinct search algorithm implementations, including the optimized `IDAstar_solver.h`.
+* main.cpp: The main execution entry point. Handles cube initialization, scrambling, solver instantiation, and result output.
+* CMakeLists.txt: Configuration directives for the CMake build system.
 
 ## Build and Run Instructions
 
 ### Prerequisites
 * A C++17 compliant compiler (GCC, Clang, or MSVC)
-* CMake (version 3.20 or higher)[cite: 1]
+* CMake (version 3.20 or higher)
 
 ### Setup
-1. Clone the repository to your local machine.
-2. Open `main.cpp` and ensure the `fileName` variable points to a valid local path for the database file generation/loading[cite: 1].
+1. Clone the repository to the local machine.
+2. Open `main.cpp` and ensure the `fileName` variable points to a valid local path for the database file generation and loading.
 
 ### Compilation (Linux / macOS / Git Bash)
-Navigate to the project root directory and run the following commands:
+Navigate to the project root directory and execute the following commands in the terminal:
 
-```bash
-mkdir build
-cd build
-cmake ..
-make
-```
+    mkdir build
+    cd build
+    cmake ..
+    make
 
 ### Execution
 Run the compiled executable:
 
-```bash
-./rubiks_cube_solver
-```
-
+    ./rubiks_cube_solver
